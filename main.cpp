@@ -12,6 +12,7 @@ using namespace std;
 
 #define BPP 32 //Bits per pixel 
 FIBITMAP* bitmap;
+FIBITMAP * new_bitmap;
 
 void multComplex(float *Z1, float *Z2, float *result) {
     result[0] = Z1[0] * Z2[0] - Z1[1] * Z2[1];
@@ -60,24 +61,37 @@ void inverseMapper(float *ZX, float *result) {
 void suavizar(int a, int b, RGBQUAD *color) {
 
     RGBQUAD color1;
-    FreeImage_GetPixelColor(bitmap, a + 1, b + 1, &color1);
+    FreeImage_GetPixelColor(new_bitmap, a + 1, b, &color1);
 
     RGBQUAD color2;
-    FreeImage_GetPixelColor(bitmap, a + 1, b, &color2);
+    FreeImage_GetPixelColor(new_bitmap, a - 1, b, &color2);
 
     RGBQUAD color3;
-    FreeImage_GetPixelColor(bitmap, a, b + 1, &color3);
+    FreeImage_GetPixelColor(new_bitmap, a, b + 1, &color3);
 
     RGBQUAD color4;
-    FreeImage_GetPixelColor(bitmap, a, b, &color4);
+    FreeImage_GetPixelColor(new_bitmap, a, b - 1, &color4);
 
-    int red = color1.rgbRed + color2.rgbRed + color3.rgbRed + color4.rgbRed;
-    int green = color1.rgbGreen + color2.rgbGreen + color3.rgbGreen + color4.rgbGreen;
-    int blue = color1.rgbBlue + color2.rgbBlue + color3.rgbBlue + color4.rgbBlue;
+    RGBQUAD color5;
+    FreeImage_GetPixelColor(new_bitmap, a + 1, b + 1, &color5);
 
-    color->rgbGreen = green/4;
-    color->rgbBlue = blue/4;
-    color->rgbRed = red/4;
+    RGBQUAD color6;
+    FreeImage_GetPixelColor(new_bitmap, a - 1, b + 1, &color6);
+
+    RGBQUAD color7;
+    FreeImage_GetPixelColor(new_bitmap, a - 1, b - 1, &color7);
+
+    RGBQUAD color8;
+    FreeImage_GetPixelColor(new_bitmap, a + 1, b - 1, &color8);
+
+
+    int red = color1.rgbRed + color2.rgbRed + color3.rgbRed + color4.rgbRed + color5.rgbRed + color6.rgbRed + color7.rgbRed + color8.rgbRed;
+    int green = color1.rgbGreen + color2.rgbGreen + color3.rgbGreen + color4.rgbGreen + color5.rgbGreen + color6.rgbGreen + color7.rgbGreen + color8.rgbGreen;
+    int blue = color1.rgbBlue + color2.rgbBlue + color3.rgbBlue + color4.rgbBlue + color5.rgbBlue + color6.rgbBlue + color7.rgbBlue + color8.rgbBlue;
+
+    color->rgbGreen = green / 8;
+    color->rgbBlue = blue / 8;
+    color->rgbRed = red / 8;
 
 }
 
@@ -105,36 +119,43 @@ int main(int argc, char** argv) {
     mapper(Zwidth, resultwidth);
     mapper(Zheight, resultheight);
 
-    FIBITMAP * new_bitmap = FreeImage_Allocate(resultwidth[0], resultheight[1], BPP);
+    new_bitmap = FreeImage_Allocate(resultwidth[0], resultheight[1], BPP);
 
     FreeImage_Unload(bitmap);
     bitmap = temp;
 
-    for (int i = 0; i < width; i++) {
-        for (int j = 0; j < height; j++) {
+    for (int i = 0; i < resultwidth[0]; i++) {
 
-            float Z[2] = {i, height - j};
+        for (int j = 0; j < resultheight[1]; j++) {
+
+            float Z[2] = {i, resultheight[1] - j};
             float resultMap[2];
             inverseMapper(Z, resultMap);
 
-            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > width | resultMap[1] > height) {
+            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > width | resultMap[1] > resultheight[1]) {
                 RGBQUAD color;
                 color.rgbGreen = 0;
                 color.rgbBlue = 0;
                 color.rgbRed = 0;
                 FreeImage_SetPixelColor(new_bitmap, i, j, &color);
             } else {
-
                 RGBQUAD color;
-                suavizar(resultMap[0], height - resultMap[1], &color);
-
-
-                //  RGBQUAD color;
-                //  FreeImage_GetPixelColor(bitmap, resultMap[0], height - resultMap[1], &color);
+                FreeImage_GetPixelColor(bitmap, resultMap[0], resultheight[1] - resultMap[1], &color);
                 FreeImage_SetPixelColor(new_bitmap, i, j, &color);
             }
         }
     }
+
+
+    for (int i = 1; i < resultwidth[0] - 2; i++) {
+        for (int j = 1; j < resultheight[1] - 2; j++) {
+            RGBQUAD color;
+            FreeImage_GetPixelColor(new_bitmap, i, j, &color);
+            suavizar(i, j, &color);
+            FreeImage_SetPixelColor(new_bitmap, i, j, &color);
+        }
+    }
+
 
     FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
     FreeImage_Unload(bitmap);
