@@ -17,16 +17,22 @@
 //FIBITMAP * new_bitmap;
 //
 //void multComplex(float *Z1, float *Z2, float *result) {
-//    #pragma omp parallel
-//    {
+////    //Inicializacion para paralelizacion----------*
+////    //Establece el numero de threads
+////    int num_threads = 4;
+////    omp_set_num_threads(num_threads);
+////    //--------------------------------------------*
+////
+////    #pragma omp parallel
+////    {
 //        result[0] = Z1[0] * Z2[0] - Z1[1] * Z2[1];
 //        result[1] = Z1[0] * Z2[1] + Z1[1] * Z2[0];
-//    }
+////    }
 //}
 //
 //void divComplex(float *Z1, float *Z2, float *result) {
-//    float div = Z2[0] * Z2[0] + Z2[1] * Z2[1];
 //    float resultMULT[2];
+//    float div = Z2[0] * Z2[0] + Z2[1] * Z2[1];
 //    Z2[1] = Z2[1] * -1;
 //    multComplex(Z1, Z2, resultMULT);
 //    result[0] = resultMULT[0] / div;
@@ -165,7 +171,7 @@
 //    }
 //
 //
-//    FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
+//    FreeImage_Save(FIF_BMP, new_bitmap, "output2.bmp");
 //    FreeImage_Unload(bitmap);
 //    
 //    run_time = omp_get_wtime() - start_time;

@@ -6,8 +6,10 @@
  */
 
 #include <FreeImage.h>
+#include <omp.h>
 #include <cstdlib>
 #include <iostream>
+#include <stdio.h>
 using namespace std;
 
 #define BPP 32 //Bits per pixel 
@@ -97,6 +99,9 @@ void suavizar(int a, int b, RGBQUAD *color) {
 
 int main(int argc, char** argv) {
 
+    double start_time, run_time;
+    start_time = omp_get_wtime();
+    
     FreeImage_Initialise();
     atexit(FreeImage_DeInitialise);
 
@@ -159,7 +164,9 @@ int main(int argc, char** argv) {
 
     FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
     FreeImage_Unload(bitmap);
+    
+    run_time = omp_get_wtime() - start_time;
+    printf("\n Ejecutado en %lf seconds \n", run_time);
+    
     return 0;
 }
-
-
