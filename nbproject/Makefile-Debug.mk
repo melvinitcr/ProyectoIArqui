@@ -52,7 +52,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-lfreeimage
+LDLIBSOPTIONS=-lfreeimage -fopenmp
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -60,7 +60,7 @@ LDLIBSOPTIONS=-lfreeimage
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/proyectoiarqui: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/proyectoiarqui ${OBJECTFILES} ${LDLIBSOPTIONS} -lfreeimage
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/proyectoiarqui ${OBJECTFILES} ${LDLIBSOPTIONS} -lfreeimage -fopenmp
 
 ${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}

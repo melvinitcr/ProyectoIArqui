@@ -38,8 +38,9 @@
         <linkerTool>
           <linkerLibItems>
             <linkerOptionItem>-lfreeimage</linkerOptionItem>
+            <linkerOptionItem>-fopenmp</linkerOptionItem>
           </linkerLibItems>
-          <commandLine>-lfreeimage</commandLine>
+          <commandLine>-lfreeimage -fopenmp</commandLine>
         </linkerTool>
       </compileType>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
