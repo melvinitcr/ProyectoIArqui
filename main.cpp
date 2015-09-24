@@ -70,7 +70,6 @@ int isBlack(RGBQUAD *color0) {
 
 void suavizar(int a, int b, RGBQUAD *color) {
 
-
     RGBQUAD color1;
     FreeImage_GetPixelColor(bitmap, a + 1, b + 1, &color1);
 
@@ -97,7 +96,6 @@ void suavizar(int a, int b, RGBQUAD *color) {
         color->rgbRed = red / 4;
     }
 
-
 }
 
 int main(int argc, char** argv) {
@@ -108,8 +106,8 @@ int main(int argc, char** argv) {
     FreeImage_Initialise();
     atexit(FreeImage_DeInitialise);
 
-    FREE_IMAGE_FORMAT formato = FreeImage_GetFileType("foto.jpg", 0);
-    bitmap = FreeImage_Load(formato, "foto.jpg");
+    FREE_IMAGE_FORMAT formato = FreeImage_GetFileType("gon.png", 0);
+    bitmap = FreeImage_Load(formato, "gon.png");
 
     FIBITMAP* temp = FreeImage_ConvertTo32Bits(bitmap);
 

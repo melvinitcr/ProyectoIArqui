@@ -25,14 +25,14 @@
 ////
 ////    #pragma omp parallel
 ////    {
-//        result[0] = Z1[0] * Z2[0] - Z1[1] * Z2[1];
-//        result[1] = Z1[0] * Z2[1] + Z1[1] * Z2[0];
+//    result[0] = Z1[0] * Z2[0] - Z1[1] * Z2[1];
+//    result[1] = Z1[0] * Z2[1] + Z1[1] * Z2[0];
 ////    }
 //}
 //
 //void divComplex(float *Z1, float *Z2, float *result) {
-//    float resultMULT[2];
 //    float div = Z2[0] * Z2[0] + Z2[1] * Z2[1];
+//    float resultMULT[2];
 //    Z2[1] = Z2[1] * -1;
 //    multComplex(Z1, Z2, resultMULT);
 //    result[0] = resultMULT[0] / div;
@@ -69,40 +69,41 @@
 //    //    cout << "A: " << resultMULT[0] << " B: " << resultMULT[1] << "\n";
 //}
 //
+//int isBlack(RGBQUAD *color0) {
+//    if (color0->rgbBlue == 0 | color0->rgbGreen == 0 | color0->rgbRed == 0) {
+//        return 1;
+//    } else {
+//        return 0;
+//    }
+//}
+//
 //void suavizar(int a, int b, RGBQUAD *color) {
 //
 //    RGBQUAD color1;
-//    FreeImage_GetPixelColor(new_bitmap, a + 1, b, &color1);
+//    FreeImage_GetPixelColor(bitmap, a + 1, b + 1, &color1);
 //
 //    RGBQUAD color2;
-//    FreeImage_GetPixelColor(new_bitmap, a - 1, b, &color2);
+//    FreeImage_GetPixelColor(bitmap, a - 1, b + 1, &color2);
 //
 //    RGBQUAD color3;
-//    FreeImage_GetPixelColor(new_bitmap, a, b + 1, &color3);
+//    FreeImage_GetPixelColor(bitmap, a + 1, b - 1, &color3);
 //
 //    RGBQUAD color4;
-//    FreeImage_GetPixelColor(new_bitmap, a, b - 1, &color4);
-//
-//    RGBQUAD color5;
-//    FreeImage_GetPixelColor(new_bitmap, a + 1, b + 1, &color5);
-//
-//    RGBQUAD color6;
-//    FreeImage_GetPixelColor(new_bitmap, a - 1, b + 1, &color6);
-//
-//    RGBQUAD color7;
-//    FreeImage_GetPixelColor(new_bitmap, a - 1, b - 1, &color7);
-//
-//    RGBQUAD color8;
-//    FreeImage_GetPixelColor(new_bitmap, a + 1, b - 1, &color8);
+//    FreeImage_GetPixelColor(bitmap, a - 1, b - 1, &color4);
 //
 //
-//    int red = color1.rgbRed + color2.rgbRed + color3.rgbRed + color4.rgbRed + color5.rgbRed + color6.rgbRed + color7.rgbRed + color8.rgbRed;
-//    int green = color1.rgbGreen + color2.rgbGreen + color3.rgbGreen + color4.rgbGreen + color5.rgbGreen + color6.rgbGreen + color7.rgbGreen + color8.rgbGreen;
-//    int blue = color1.rgbBlue + color2.rgbBlue + color3.rgbBlue + color4.rgbBlue + color5.rgbBlue + color6.rgbBlue + color7.rgbBlue + color8.rgbBlue;
+//    if (isBlack(&color1) | isBlack(&color2) | isBlack(&color3) | isBlack(&color4)) {
+//        FreeImage_GetPixelColor(bitmap, a, b, color);
+//    } else {
 //
-//    color->rgbGreen = green / 8;
-//    color->rgbBlue = blue / 8;
-//    color->rgbRed = red / 8;
+//        int red = color1.rgbRed + color2.rgbRed + color3.rgbRed + color4.rgbRed;
+//        int green = color1.rgbGreen + color2.rgbGreen + color3.rgbGreen + color4.rgbGreen;
+//        int blue = color1.rgbBlue + color2.rgbBlue + color3.rgbBlue + color4.rgbBlue;
+//
+//        color->rgbGreen = green / 4;
+//        color->rgbBlue = blue / 4;
+//        color->rgbRed = red / 4;
+//    }
 //
 //}
 //
@@ -110,22 +111,20 @@
 //
 //    double start_time, run_time;
 //    start_time = omp_get_wtime();
-//    
+//
 //    FreeImage_Initialise();
 //    atexit(FreeImage_DeInitialise);
 //
 //    FREE_IMAGE_FORMAT formato = FreeImage_GetFileType("gon.png", 0);
 //    bitmap = FreeImage_Load(formato, "gon.png");
 //
-//
 //    FIBITMAP* temp = FreeImage_ConvertTo32Bits(bitmap);
 //
 //    int width = FreeImage_GetWidth(temp);
 //    int height = FreeImage_GetHeight(temp);
 //
-//
-//    float Zwidth[2] = {width, 0};
-//    float Zheight[2] = {0, height};
+//    float Zwidth[2] = {(float) width, 0};
+//    float Zheight[2] = {0, (float) height};
 //
 //    float resultwidth[2];
 //    float resultheight[2];
@@ -138,9 +137,9 @@
 //    FreeImage_Unload(bitmap);
 //    bitmap = temp;
 //
-//    for (int i = 0; i < resultwidth[0]; i++) {
+//    for (float i = 0; i < resultwidth[0]; i++) {
 //
-//        for (int j = 0; j < resultheight[1]; j++) {
+//        for (float j = 0; j < resultheight[1]; j++) {
 //
 //            float Z[2] = {i, resultheight[1] - j};
 //            float resultMap[2];
@@ -154,28 +153,17 @@
 //                FreeImage_SetPixelColor(new_bitmap, i, j, &color);
 //            } else {
 //                RGBQUAD color;
-//                FreeImage_GetPixelColor(bitmap, resultMap[0], resultheight[1] - resultMap[1], &color);
+//                suavizar(resultMap[0], resultheight[1] - resultMap[1], &color);
 //                FreeImage_SetPixelColor(new_bitmap, i, j, &color);
 //            }
 //        }
 //    }
 //
-//
-//    for (int i = 1; i < resultwidth[0] - 2; i++) {
-//        for (int j = 1; j < resultheight[1] - 2; j++) {
-//            RGBQUAD color;
-//            FreeImage_GetPixelColor(new_bitmap, i, j, &color);
-//            suavizar(i, j, &color);
-//            FreeImage_SetPixelColor(new_bitmap, i, j, &color);
-//        }
-//    }
-//
-//
-//    FreeImage_Save(FIF_BMP, new_bitmap, "output2.bmp");
+//    FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
 //    FreeImage_Unload(bitmap);
-//    
+//
 //    run_time = omp_get_wtime() - start_time;
 //    printf("\n Ejecutado en %lf seconds \n", run_time);
-//    
+//
 //    return 0;
 //}
