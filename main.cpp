@@ -106,7 +106,6 @@ int isBlack(RGBQUAD *color0) {
 void suavizar(int a, int b, RGBQUAD *color) {
 
 
-
     RGBQUAD color1;
     FreeImage_GetPixelColor(bitmap, a + 1, b + 1, &color1);
 
