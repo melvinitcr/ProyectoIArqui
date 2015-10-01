@@ -152,69 +152,83 @@ int main(int argc, char** argv) {
         printf("Ejecucion,Tiempo\n");
     }
 
-
-
     double start_time, run_time;
     start_time = omp_get_wtime();
 
     FreeImage_Initialise();
     atexit(FreeImage_DeInitialise);
 
+    //strcpy(foto, "sample.png");
 
     FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(foto, 0);
     bitmap = FreeImage_Load(formato, foto);
 
+
     FIBITMAP* temp = FreeImage_ConvertTo32Bits(bitmap);
+
 
     int width = FreeImage_GetWidth(temp);
     int height = FreeImage_GetHeight(temp);
 
+
+    FreeImage_Unload(bitmap);
+
+
+    bitmap = temp;
+
     float Zwidth[2] = {(float) width, 0};
     float Zheight[2] = {0, (float) height};
-
     float resultwidth[2];
     float resultheight[2];
+
 
     mapper(Zwidth, resultwidth);
     mapper(Zheight, resultheight);
 
-    new_bitmap = FreeImage_Allocate(resultwidth[0], resultheight[1], BPP);
+    RGBQUAD color;
+    color.rgbGreen = 0;
+    color.rgbBlue = 0;
+    color.rgbRed = 0;
 
-    FreeImage_Unload(bitmap);
-    bitmap = temp;
+
+    new_bitmap = FreeImage_Allocate(width, height, BPP);
+
 
 #pragma omp simd
-    for (float i = 0; i < resultwidth[0]; i++) {
+    for (float i = 0; i < width; i++) {
+        for (float j = 0; j < height; j++) {
 
-        for (float j = 0; j < resultheight[1]; j++) {
-
-            float Z[2] = {i, resultheight[1] - j};
+            float Z[2] = {i, height - j};
             float resultMap[2];
             inverseMapper(Z, resultMap);
 
-            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > resultwidth[0] | resultMap[1] > resultheight[1]) {
-                RGBQUAD color;
-                color.rgbGreen = 0;
-                color.rgbBlue = 0;
-                color.rgbRed = 0;
+            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > width | resultMap[1] > height) {
                 FreeImage_SetPixelColor(new_bitmap, i, j, &color);
             } else {
                 RGBQUAD color;
-                suavizar(resultMap[0], resultheight[1] - resultMap[1], &color);
+                suavizar(resultMap[0], height - resultMap[1], &color);
                 FreeImage_SetPixelColor(new_bitmap, i, j, &color);
             }
         }
     }
 
+    FIBITMAP * salida = FreeImage_Allocate(resultwidth[0], resultheight[1], BPP);
 
-    FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
+
+    for (int i = 0; i < resultwidth[0]; i++) {
+        for (int j = 0; j < resultheight[1]; j++) {
+            RGBQUAD color;
+            FreeImage_GetPixelColor(new_bitmap, i, height - j, &color);
+            FreeImage_SetPixelColor(salida, i, resultheight[1] - j, &color);
+        }
+    }
+
+    FreeImage_Save(FIF_BMP, salida, "output.bmp");
     FreeImage_Unload(bitmap);
 
     run_time = omp_get_wtime() - start_time;
+    printf("%d,%lf\n", 1, run_time);
 
-    printf("%d,%lf\n", count, run_time);
-
-    //printf("Ejecutado en %lf seconds \n", run_time);
 
     return 0;
 }
