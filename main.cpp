@@ -10,17 +10,30 @@
 #include <cstdlib>
 #include <iostream>
 #include <stdio.h>
+#include <string.h>
 using namespace std;
 
 #define BPP 32 //Bits per pixel 
 FIBITMAP* bitmap;
 FIBITMAP * new_bitmap;
 
+/**
+ * Multiplica dos numeros complejos 
+ * @param Z1
+ * @param Z2
+ * @param result
+ */
 void multComplex(float *Z1, float *Z2, float *result) {
     result[0] = Z1[0] * Z2[0] - Z1[1] * Z2[1];
     result[1] = Z1[0] * Z2[1] + Z1[1] * Z2[0];
 }
 
+/**
+ * Divide dos numeros complejos
+ * @param Z1
+ * @param Z2
+ * @param result
+ */
 void divComplex(float *Z1, float *Z2, float *result) {
     float div = Z2[0] * Z2[0] + Z2[1] * Z2[1];
     float resultMULT[2];
@@ -30,6 +43,11 @@ void divComplex(float *Z1, float *Z2, float *result) {
     result[1] = resultMULT[1] / div;
 }
 
+/**
+ * Realiza el mapeo de Z a W
+ * @param ZX
+ * @param result
+ */
 void mapper(float *ZX, float *result) {
 
     float Z[2] = {ZX[0], ZX[1]};
@@ -45,6 +63,11 @@ void mapper(float *ZX, float *result) {
 
 }
 
+/**
+ * Realiza el mapeo inverso de W a Z
+ * @param ZX
+ * @param result
+ */
 void inverseMapper(float *ZX, float *result) {
 
     float W[2] = {ZX[0], ZX[1]};
@@ -60,6 +83,11 @@ void inverseMapper(float *ZX, float *result) {
     //    cout << "A: " << resultMULT[0] << " B: " << resultMULT[1] << "\n";
 }
 
+/**
+ * Evalua si un color es negro en su totalidad
+ * @param color0
+ * @return 
+ */
 int isBlack(RGBQUAD *color0) {
     if (color0->rgbBlue == 0 | color0->rgbGreen == 0 | color0->rgbRed == 0) {
         return 1;
@@ -68,7 +96,15 @@ int isBlack(RGBQUAD *color0) {
     }
 }
 
+/**
+ * Dada la coordenada de un pixel obtiene un color promedio apartir de los
+ * pixeles aldededor de la coordenada
+ * @param a
+ * @param b
+ * @param color
+ */
 void suavizar(int a, int b, RGBQUAD *color) {
+
 
 
     RGBQUAD color1;
@@ -96,11 +132,28 @@ void suavizar(int a, int b, RGBQUAD *color) {
         color->rgbBlue = blue / 4;
         color->rgbRed = red / 4;
     }
-
-
 }
 
+char foto[99];
+
 int main(int argc, char** argv) {
+
+
+    if (argc <= 2) {
+        exit(0);
+    }
+
+    bzero(foto, 99);
+    // printf("%s\n", argv[2]);
+    strcpy(foto, argv[2]);
+
+    int count = atoi(argv[4]);
+
+    if (count == 1) {
+        printf("Ejecucion,Tiempo\n");
+    }
+
+
 
     double start_time, run_time;
     start_time = omp_get_wtime();
@@ -108,8 +161,9 @@ int main(int argc, char** argv) {
     FreeImage_Initialise();
     atexit(FreeImage_DeInitialise);
 
-    FREE_IMAGE_FORMAT formato = FreeImage_GetFileType("foto.jpg", 0);
-    bitmap = FreeImage_Load(formato, "foto.jpg");
+
+    FREE_IMAGE_FORMAT formato = FreeImage_GetFileType(foto, 0);
+    bitmap = FreeImage_Load(formato, foto);
 
     FIBITMAP* temp = FreeImage_ConvertTo32Bits(bitmap);
 
@@ -130,6 +184,7 @@ int main(int argc, char** argv) {
     FreeImage_Unload(bitmap);
     bitmap = temp;
 
+#pragma omp simd
     for (float i = 0; i < resultwidth[0]; i++) {
 
         for (float j = 0; j < resultheight[1]; j++) {
@@ -138,7 +193,7 @@ int main(int argc, char** argv) {
             float resultMap[2];
             inverseMapper(Z, resultMap);
 
-            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > width | resultMap[1] > height) {
+            if (resultMap[0] < 0 | resultMap[1] < 0 | resultMap[0] > resultwidth[0] | resultMap[1] > resultheight[1]) {
                 RGBQUAD color;
                 color.rgbGreen = 0;
                 color.rgbBlue = 0;
@@ -152,11 +207,15 @@ int main(int argc, char** argv) {
         }
     }
 
+
     FreeImage_Save(FIF_BMP, new_bitmap, "output.bmp");
     FreeImage_Unload(bitmap);
 
     run_time = omp_get_wtime() - start_time;
-    printf("\n Ejecutado en %lf seconds \n", run_time);
+
+    printf("%d,%lf\n", count, run_time);
+
+    //printf("Ejecutado en %lf seconds \n", run_time);
 
     return 0;
 }
