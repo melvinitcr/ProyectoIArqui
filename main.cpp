@@ -194,7 +194,7 @@ int main(int argc, char** argv) {
     new_bitmap = FreeImage_Allocate(width, height, BPP);
 
 
-#pragma omp simd
+//#pragma omp simd
     for (float i = 0; i < width; i++) {
         for (float j = 0; j < height; j++) {
 
@@ -227,7 +227,7 @@ int main(int argc, char** argv) {
     FreeImage_Unload(bitmap);
 
     run_time = omp_get_wtime() - start_time;
-    printf("%d,%lf\n", 1, run_time);
+    printf("%d,%lf\n", count, run_time);
 
 
     return 0;
